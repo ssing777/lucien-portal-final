@@ -11,18 +11,21 @@ function App() {
 
   const handleDeclare = async () => {
     if (declaration.trim() === correctDeclaration) {
-      try {
-        if (!window.ethereum) throw new Error("MetaMask가 설치되어 있지 않습니다.");
-        await window.ethereum.request({ method: "eth_requestAccounts" });
+      setStatus("자각 성공! 포탈이 열립니다...");
+      setPortalOpen(true);
 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        console.log("사용자 주소:", await signer.getAddress());
-
-        setStatus("자각 성공! 포탈이 열립니다...");
-        setPortalOpen(true);
-      } catch (err) {
-        setStatus("오류 발생: " + err.message);
+      // MetaMask는 있으면 연결 시도, 없으면 무시
+      if (window.ethereum) {
+        try {
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          console.log("사용자 주소:", await signer.getAddress());
+        } catch (err) {
+          console.log("MetaMask 연결 실패:", err.message);
+        }
+      } else {
+        console.log("MetaMask 없음 - 선언만으로 포탈 실행됨");
       }
     } else {
       setStatus("자각 실패: 선언이 정확하지 않습니다.");
@@ -47,3 +50,4 @@ function App() {
 }
 
 export default App;
+
